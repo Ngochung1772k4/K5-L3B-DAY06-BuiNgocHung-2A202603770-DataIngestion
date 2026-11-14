@@ -45,3 +45,25 @@ Dùng cùng dữ liệu, model và câu hỏi cho cả ba cấu hình. Tách **1
 | Cách nộp bài | [SUBMISSION.md](SUBMISSION.md) |
 
 [data/format-example.json](data/format-example.json) chỉ minh họa định dạng, không phải corpus đủ điều kiện. Phần xử lý và benchmark do bạn tự hiện thực; không bắt buộc xây chatbot.
+
+## Bản triển khai trong repo này
+
+Pipeline đang dùng `Introduction to Sociology 2e` của OpenStax (CC BY 4.0), trích 30 trang nội dung thuộc Chương 1–2. Chi tiết giấy phép, URL, trang vật lý, số ký tự và quy tắc tính trang nằm ở [data/manifest.json](data/manifest.json). Benchmark là 20 câu tiếng Anh có evidence đã xác minh ở [benchmark/questions.json](benchmark/questions.json).
+
+Để cài và chạy trên Windows PowerShell:
+
+```powershell
+cd starter
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe scripts/prepare_corpus.py
+.\.venv\Scripts\python.exe -m src.run
+```
+
+PDF nguồn hiện đã nằm tại `data/OpenStax_Introduction_to_Sociology_2e.download.pdf`; nếu cần tải lại từ PowerShell ở thư mục `starter/`, chạy:
+
+```powershell
+curl.exe -L -o ..\data\OpenStax_Introduction_to_Sociology_2e.download.pdf "https://assets.openstax.org/oscms-prodcms/media/documents/IntroductionToSociology2e-OP_tbTLqMj.pdf"
+```
+
+Pipeline dùng FastEmbed/ONNX local (`sentence-transformers/all-MiniLM-L6-v2`, 384 chiều) và Chroma PersistentClient với cosine search, nên không cần API key hay Docker daemon. Lần đầu sẽ tải model embedding. Kết quả thực chạy được lưu trong `starter/results/`; báo cáo cá nhân ở [report/individual/2A202603770_BuiNgocHung.md](report/individual/2A202603770_BuiNgocHung.md).

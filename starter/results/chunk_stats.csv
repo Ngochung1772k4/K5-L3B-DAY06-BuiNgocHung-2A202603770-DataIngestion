@@ -1,0 +1,4 @@
+strategy,chunk_count,total_chars,mean_chars,median_chars,p90_chars,min_chars,max_chars,description,embedding_seconds_first_seen,store_upsert_seconds,model,dimensions,metric,vector_store
+A,277,129710,468.2671480144404,495,498,62,499,"Fixed-size 500 characters, overlap 50; no metadata filter",2.3139714999997523,0.6343617999955313,sentence-transformers/all-MiniLM-L6-v2,384,cosine,Chroma PersistentClient 1.3.5
+B,176,117942,670.125,721.5,790,65,805,Sentence/paragraph-boundary chunks up to 800 characters; no metadata filter,2.2215498000005027,0.4034193999978015,sentence-transformers/all-MiniLM-L6-v2,384,cosine,Chroma PersistentClient 1.3.5
+C,176,117942,670.125,721.5,790,65,805,Same sentence/paragraph chunks as B; apply chapter filter only when supplied,3.650000144261867e-05,0.2985476000030758,sentence-transformers/all-MiniLM-L6-v2,384,cosine,Chroma PersistentClient 1.3.5

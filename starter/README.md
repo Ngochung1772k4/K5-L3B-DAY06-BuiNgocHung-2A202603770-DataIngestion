@@ -1,31 +1,20 @@
-# Starter · PostgreSQL + pgvector
+# Pipeline đã hiện thực · Chroma + FastEmbed
 
-Bộ khởi động **tùy chọn** cho lab cá nhân. Docker Compose tạo PostgreSQL + pgvector local; các file trong `src/` là **khung pseudocode có TODO**, chưa đọc tài liệu, tạo embedding, lưu vector hay chạy benchmark. Bạn cần tự hiện thực. Vẫn có thể chọn Qdrant, Chroma hoặc vector store tương đương theo [GUIDE.md](../GUIDE.md).
+Repo này hiện dùng Chroma PersistentClient làm vector store cục bộ; Docker/PostgreSQL + pgvector trong starter cũ vẫn là lựa chọn khác nhưng không cần để chạy pipeline này. Chroma lưu bền vững trên đĩa, tìm cosine gần đúng và hỗ trợ lọc metadata.
 
 ## Cấu trúc
 
 ```text
 starter/
-├── docker-compose.yml     # PostgreSQL 16 + pgvector, chỉ mở cổng local
-├── init.sql               # bật extension khi tạo database mới
-├── requirements.txt       # psycopg, pypdf và python-dotenv
-├── .env.example           # cấu hình mẫu; copy thành .env
-├── scripts/check_setup.py # kiểm tra kết nối và extension (đã chạy được)
-├── src/
-│   ├── models.py          # cấu trúc dữ liệu mẫu
-│   ├── ingestion.py       # TODO: đọc / chuẩn hóa tài liệu
-│   ├── chunking.py        # TODO: chia chunk
-│   ├── embeddings.py      # TODO: chọn model API hoặc local
-│   ├── store.py           # TODO: lưu vector, metadata và filter
-│   ├── evaluation.py      # TODO: chấm truy xuất, lưu trace
-│   └── run.py             # TODO: kết nối các bước thành pipeline
-├── data/                  # bạn tự chuẩn bị corpus được phép sử dụng
-└── results/               # lưu kết quả của bạn
+├── data/pages.jsonl       # 30 trang đã trích, chuẩn hóa và có attribution
+├── scripts/prepare_corpus.py
+├── src/                   # ingestion, chunking, embeddings, Chroma và evaluation
+└── results/               # summary, trace top-3 và thống kê chunk
 ```
 
-## 1. Cài và kiểm tra database
+## 1. Cài đặt và dựng corpus
 
-Cần Docker Desktop hoặc Docker Engine + Compose, Python **3.11–3.14**, và mạng để tải image/dependencies lần đầu. Các lệnh sau chạy từ thư mục `starter/`:
+Cần Python **3.11–3.14** và mạng cho lần cài package/tải model đầu tiên. Chạy từ thư mục `starter/`:
 
 ```bash
 cd starter
@@ -36,30 +25,23 @@ Kích hoạt `.venv`: macOS/Linux dùng `source .venv/bin/activate`; Windows Pow
 
 ```bash
 python -m pip install -r requirements.txt
-# macOS/Linux: cp .env.example .env
-# Windows PowerShell: Copy-Item .env.example .env
-docker compose -p day6_student_starter up -d --wait
-python scripts/check_setup.py
+python scripts/prepare_corpus.py
 ```
 
-Kỳ vọng: hiện tên database, phiên bản PostgreSQL và pgvector, sau đó `Setup OK`. Đây **chỉ là kiểm tra hạ tầng**, không phải kết quả benchmark. Docker dùng cổng `127.0.0.1:55433` và mật khẩu cố định **chỉ dùng local cho lab**; nếu cổng bận, sửa đồng thời port trong `docker-compose.yml` và `DATABASE_URL` trong `.env`. `init.sql` chỉ chạy khi volume mới được tạo; nếu database sẵn có chưa bật extension, xem log Docker và kiểm tra cấu hình thay vì xóa volume chứa dữ liệu.
+PDF nguồn được ghi tại manifest root. Script chỉ tính các PDF page IDs được chọn; kiểm tra đủ 30 trang và ghi manifest `data/manifest.json`.
 
-Dừng container nhưng giữ dữ liệu:
+## 2. Embedding và vector store
 
-```bash
-docker compose -p day6_student_starter stop
-```
+Embedding dùng FastEmbed 0.7.3 với `sentence-transformers/all-MiniLM-L6-v2` (384 chiều, Apache-2.0, tiếng Anh, ONNX CPU). Không gửi tài liệu ra API. Chroma 1.3.5 lưu trong `results/chroma/`, metric cosine. Model và store được giữ nguyên giữa A/B/C. Model cache nằm ngoài repo trên máy người chạy.
 
-## 2. Chọn embedding model
+## 3. Chạy pipeline và benchmark
 
-Điền key tương ứng trong `.env` nếu dùng OpenRouter, OpenAI hoặc Gemini; **không commit `.env`**. Model local không cần API key. `requirements.txt` chỉ có dependencies cơ bản: tự cài SDK hoặc thư viện local phù hợp với model bạn chọn và ghi lại version/lệnh cài trong báo cáo. Ghi tên model và số chiều; dùng cùng model cho toàn bộ chiến lược và vector query tương thích vector document.
+1. A: fixed-size 500 ký tự, overlap 50, không filter.
+2. B: ghép câu/đoạn theo ranh giới cấu trúc, tối đa 800 ký tự, không filter.
+3. C: đúng chunk B, thêm filter `chapter` khi câu hỏi cung cấp phạm vi.
+4. Bộ câu hỏi cố định trước lần chạy cuối ở `benchmark/questions.json` (20 dev / 5 test; xem `SPLIT_CHANGELOG.md` về lần thay test sau khi tune).
+5. Chạy `python -m src.run`; mỗi lần chạy thay snapshot theo strategy, không nhân đôi chunk cũ.
 
-## 3. Hoàn thiện pipeline
+Trace đầy đủ, summary, thời gian, số chunk và metric nằm dưới `results/`. Thư mục Chroma bị ignore khỏi git; chạy lại lệnh trên để tái tạo.
 
-1. Đặt corpus vào `data/` hoặc cung cấp manifest/hướng dẫn truy cập. Đọc [GUIDE.md](../GUIDE.md) về **30 trang nội dung**, quyền dữ liệu và metadata.
-2. Hoàn thiện từng hàm TODO trong `src/`. Lưu ID tài liệu, nguồn, trang/vị trí và ít nhất một trường filter có ích.
-3. Xây ít nhất ba cấu hình; ví dụ A fixed-size, B theo đoạn, C như B nhưng có filter. Cần cùng corpus, model và benchmark; nạp lại không nhân đôi và xử lý chunk cũ khi dữ liệu đổi.
-4. Tự viết ít nhất 20 câu hỏi kèm evidence, tách dev/test trước khi thử theo [BENCHMARK.md](../BENCHMARK.md). Lưu trace top-3 và báo cáo đủ năm tiêu chí.
-5. Sau khi hoàn thiện, chạy `python -m src.run` từ thư mục `starter/`. Trước khi làm TODO, lệnh này **chủ động báo `NotImplementedError`**.
-
-Lưu code, cấu hình, kết quả và lệnh chạy để người chấm tái lập; không commit key, dữ liệu mật hoặc dữ liệu không có quyền chia sẻ.
+Không có API key. Không dùng số ví dụ làm số đo; benchmark và kết quả báo cáo lấy từ artifacts thực tế.

@@ -10,6 +10,7 @@ class DocumentPage:
     page: int
     text: str
     metadata: dict[str, Any] = field(default_factory=dict)
+    char_count: int = 0
 
 
 @dataclass

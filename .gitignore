@@ -8,3 +8,5 @@ __pycache__/
 .DS_Store
 .pytest_cache/
 *.sqlite
+starter/results/chroma/
+data/OpenStax_Introduction_to_Sociology_2e.pdf

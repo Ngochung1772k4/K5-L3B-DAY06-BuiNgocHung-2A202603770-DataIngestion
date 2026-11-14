@@ -1,23 +1,22 @@
-"""Read-only setup check; this is a utility, not the student pipeline solution."""
-import os
-import sys
+"""Read-only dependency and Chroma persistence setup check."""
+from importlib.metadata import version
 from pathlib import Path
 
-import psycopg
-from dotenv import load_dotenv
+import chromadb
+from fastembed import TextEmbedding
 
-load_dotenv(Path(__file__).resolve().parents[1] / '.env')
-url = os.getenv('DATABASE_URL')
-if not url:
-    sys.exit('DATABASE_URL missing: copy starter/.env.example to starter/.env first.')
-try:
-    with psycopg.connect(url, connect_timeout=5) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT current_database(), current_setting('server_version'), extversion FROM pg_extension WHERE extname = 'vector'")
-            row = cursor.fetchone()
-            if not row:
-                sys.exit('Connected, but pgvector extension is missing. See starter/README.md.')
-            print(f'Database: {row[0]} | PostgreSQL: {row[1]} | pgvector: {row[2]}')
-except psycopg.Error:
-    sys.exit('Database connection failed. Check Docker, port and DATABASE_URL in starter/.env.')
-print('Setup OK. Pipeline functions still need to be implemented.')
+ROOT = Path(__file__).resolve().parents[2]
+RESULTS = Path(__file__).resolve().parents[1] / "results"
+
+for package in ("chromadb", "fastembed", "pypdf"):
+    print(f"{package}: {version(package)}")
+
+client = chromadb.PersistentClient(path=str(RESULTS / "chroma"))
+print(f"Chroma persistent path: {RESULTS / 'chroma'}")
+print(f"Collections available: {[c.name for c in client.list_collections()]}")
+model = "sentence-transformers/all-MiniLM-L6-v2"
+supported = {m["model"]: m for m in TextEmbedding.list_supported_models()}
+if model not in supported or supported[model]["dim"] != 384:
+    raise RuntimeError("Pinned FastEmbed model or expected 384 dimensions is unavailable")
+print(f"Embedding model available: {model} ({supported[model]['dim']} dimensions)")
+print("Setup OK. Run scripts/prepare_corpus.py, then python -m src.run.")
