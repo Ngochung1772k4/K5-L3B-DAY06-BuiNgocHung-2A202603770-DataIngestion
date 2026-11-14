@@ -45,3 +45,15 @@ Embedding dùng FastEmbed 0.7.3 với `sentence-transformers/all-MiniLM-L6-v2` (
 Trace đầy đủ, summary, thời gian, số chunk và metric nằm dưới `results/`. Thư mục Chroma bị ignore khỏi git; chạy lại lệnh trên để tái tạo.
 
 Không có API key. Không dùng số ví dụ làm số đo; benchmark và kết quả báo cáo lấy từ artifacts thực tế.
+
+## 4. Chạy chatbot trích dẫn nguồn
+
+Chatbot local dùng collection C hiện có, cùng FastEmbed và Chroma. Bot truy xuất tối đa ba chunk, trích nguyên văn, kèm chương/trang PDF, điểm cosine và liên kết đến PDF chính thức. Bot không dùng LLM để tự viết câu trả lời; cách này giúp phần demo luôn cho thấy chính xác đoạn dữ liệu được truy xuất. Câu hỏi và nội dung tài liệu không được gửi ra dịch vụ ngoài.
+
+Chạy pipeline trước nếu `results/chroma/` chưa có collection `day6_c`. Sau đó, từ thư mục `starter/`, chạy:
+
+```powershell
+.\.venv\Scripts\python.exe -m src.chatbot_server
+```
+
+Mở `http://127.0.0.1:8000` trên cùng máy. Chọn tất cả dữ liệu hoặc giới hạn Chương 1/2; bấm vào trích dẫn để mở trang PDF tương ứng. Dừng server bằng `Ctrl+C`. Chatbot bind vào localhost, không mở cổng ra mạng.

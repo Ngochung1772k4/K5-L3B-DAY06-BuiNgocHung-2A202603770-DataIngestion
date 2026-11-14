@@ -67,3 +67,7 @@ curl.exe -L -o ..\data\OpenStax_Introduction_to_Sociology_2e.download.pdf "https
 ```
 
 Pipeline dùng FastEmbed/ONNX local (`sentence-transformers/all-MiniLM-L6-v2`, 384 chiều) và Chroma PersistentClient với cosine search, nên không cần API key hay Docker daemon. Lần đầu sẽ tải model embedding. Kết quả thực chạy được lưu trong `starter/results/`; báo cáo cá nhân ở [report/individual/2A202603770_BuiNgocHung.md](report/individual/2A202603770_BuiNgocHung.md).
+
+## Chatbot demo
+
+Repo có chatbot local để trình bày truy xuất trên corpus. Khởi chạy index trước, sau đó mở server tại `http://127.0.0.1:8000` theo hướng dẫn trong [starter/README.md](starter/README.md). Bot hiện trích nguyên văn tối đa ba đoạn kèm trang PDF và liên kết nguồn; nó không sinh câu trả lời bằng LLM nên nội dung phản hồi luôn minh bạch để người demo tự giải thích.

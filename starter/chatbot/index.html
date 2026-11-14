@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1728">
+  <title>Sociology Source Chat</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1220; --panel:#111c2e; --line:#25344b; --muted:#9aabc2; --text:#edf4ff; --accent:#57d6c2; --blue:#82aaff; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at 20% -10%,#19324a 0,transparent 42%),var(--bg); color:var(--text); font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    .shell { width:min(100% - 32px,980px); margin:0 auto; padding:32px 0 24px; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:4px 0 22px; border-bottom:1px solid var(--line); }
+    .brand { display:flex; align-items:center; gap:13px; }
+    .logo { display:grid; place-items:center; width:44px; height:44px; border-radius:14px; color:#081521; background:linear-gradient(140deg,#57d6c2,#9de7d5); font-size:22px; font-weight:800; }
+    h1 { font-size:20px; margin:0; letter-spacing:-.02em; }
+    .subtitle { margin:3px 0 0; color:var(--muted); font-size:13px; }
+    .status { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px; white-space:nowrap; }
+    .dot { width:8px; height:8px; border-radius:50%; background:#f3b94b; box-shadow:0 0 12px #f3b94b55; }
+    .dot.ready { background:#57d6a0; box-shadow:0 0 12px #57d6a055; }
+    .notice { display:flex; gap:12px; padding:13px 15px; margin:18px 0; border:1px solid #28615b; border-radius:12px; color:#c5f7e9; background:#102d2a99; font-size:13px; }
+    .notice strong { color:#e1fff6; }
+    .controls { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; }
+    .controls label { color:var(--muted); font-size:13px; }
+    select,button,textarea { font:inherit; }
+    select { margin-left:8px; padding:8px 30px 8px 10px; border:1px solid var(--line); border-radius:9px; background:#111c2e; color:var(--text); }
+    .clear { padding:8px 11px; border:1px solid var(--line); border-radius:9px; color:var(--muted); background:transparent; cursor:pointer; }
+    .clear:hover { color:var(--text); border-color:#50627d; }
+    #messages { display:flex; flex-direction:column; gap:18px; min-height:340px; padding:20px 0; }
+    .welcome { max-width:700px; margin:auto; padding:28px; border:1px solid var(--line); border-radius:18px; background:#111c2eaa; text-align:center; }
+    .welcome .symbol { font-size:32px; }
+    .welcome h2 { margin:8px 0; font-size:19px; }
+    .welcome p { margin:0; color:var(--muted); }
+    .suggestions { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:18px; }
+    .suggestion { padding:8px 11px; border:1px solid var(--line); border-radius:99px; background:#142238; color:#c4d5ec; cursor:pointer; font-size:12px; }
+    .suggestion:hover { border-color:#57d6c2; color:#eafffa; }
+    .message { width:min(100%,850px); }
+    .message.user { align-self:flex-end; width:auto; max-width:82%; padding:11px 15px; border:1px solid #28486a; border-radius:16px 16px 4px 16px; background:#162b45; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .message.assistant { padding:15px; border:1px solid var(--line); border-radius:16px 16px 16px 4px; background:#101a2a; }
+    .answer-head { display:flex; align-items:center; gap:9px; margin-bottom:7px; color:#d9fff5; font-weight:650; }
+    .mini-logo { display:grid; place-items:center; width:24px; height:24px; border-radius:8px; color:#081521; background:var(--accent); font-size:13px; }
+    .message p { margin:0; color:#ced9e8; }
+    .cards { display:grid; gap:10px; margin-top:14px; }
+    .card { overflow:hidden; border:1px solid #2b3b53; border-radius:12px; background:#0d1726; }
+    .card-top { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:9px; padding:10px 12px; border-bottom:1px solid #26364d; color:#c8d7eb; font-size:12px; }
+    .citation { display:flex; flex-wrap:wrap; align-items:center; gap:7px; }
+    .badge { padding:3px 7px; border:1px solid #355372; border-radius:99px; color:#aed0ff; background:#14243a; }
+    .score { color:#9aabc2; }
+    .card a { color:#8ddfd2; text-decoration:none; }
+    .card a:hover { text-decoration:underline; }
+    .card blockquote { margin:0; padding:12px; color:#dce6f3; white-space:pre-wrap; overflow-wrap:anywhere; font-size:13px; }
+    .loading { color:var(--muted); font-size:13px; }
+    .error { color:#ffc3b8 !important; }
+    form { position:sticky; bottom:0; display:flex; gap:10px; padding:14px 0 5px; background:linear-gradient(transparent,var(--bg) 18%); }
+    textarea { flex:1; min-height:52px; max-height:150px; resize:vertical; padding:14px; border:1px solid #344660; border-radius:14px; outline:none; color:var(--text); background:#111c2e; }
+    textarea:focus { border-color:#57d6c2; box-shadow:0 0 0 3px #57d6c21c; }
+    textarea::placeholder { color:#8293aa; }
+    .send { align-self:stretch; min-width:92px; padding:0 18px; border:0; border-radius:13px; color:#071520; background:var(--accent); font-weight:750; cursor:pointer; }
+    .send:disabled { opacity:.55; cursor:wait; }
+    footer { margin-top:10px; text-align:center; color:#7789a2; font-size:11px; }
+    @media (max-width:600px) { .shell { width:min(100% - 20px,980px); padding-top:20px; } header { align-items:flex-start; } .status { padding-top:8px; } .status span:last-child { display:none; } .message.user { max-width:92%; } form { gap:7px; } .send { min-width:66px; padding:0 12px; } .welcome { padding:22px 16px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">S</div>
+        <div><h1>Sociology Source Chat</h1><p class="subtitle">Hỏi đáp có trích dẫn từ OpenStax Sociology 2e</p></div>
+      </div>
+      <div class="status" aria-live="polite"><span id="statusDot" class="dot"></span><span id="statusText">Đang kết nối index…</span></div>
+    </header>
+
+    <aside class="notice"><span>ⓘ</span><div><strong>Kết quả bám theo đoạn nguồn.</strong> Bot dùng tìm kiếm ngữ nghĩa và trích nguyên văn các chunk gần nhất; không tự viết câu trả lời bằng LLM. Điểm tương đồng không phải xác suất đúng. Mở trang PDF để kiểm chứng trích dẫn.</div></aside>
+
+    <div class="controls">
+      <label for="chapter">Giới hạn dữ liệu
+        <select id="chapter">
+          <option value="">Tất cả chương trong corpus</option>
+          <option value="1">Chương 1 — Introduction to Sociology</option>
+          <option value="2">Chương 2 — Sociological Research</option>
+        </select>
+      </label>
+      <button id="clear" class="clear" type="button">Xóa hội thoại</button>
+    </div>
+
+    <section id="messages" aria-live="polite">
+      <div id="welcome" class="welcome">
+        <div class="symbol">⌕</div>
+        <h2>Hỏi nội dung trong tài liệu</h2>
+        <p>Mỗi kết quả đi kèm chương, trang PDF, điểm tương đồng và liên kết nguồn.</p>
+        <div class="suggestions">
+          <button class="suggestion" type="button">What does public sociology aim to do?</button>
+          <button class="suggestion" type="button">Which research methods are described?</button>
+          <button class="suggestion" type="button">What is institutional ethnography?</button>
+        </div>
+      </div>
+    </section>
+
+    <form id="chatForm">
+      <textarea id="question" maxlength="1000" placeholder="Nhập câu hỏi về tài liệu…" aria-label="Câu hỏi" required></textarea>
+      <button id="send" class="send" type="submit">Gửi ↗</button>
+    </form>
+    <footer>Dữ liệu và câu hỏi được xử lý local trên máy này · Index C · Chroma cosine · FastEmbed MiniLM 384d</footer>
+  </main>
+  <script>
+    const messages = document.getElementById('messages');
+    const form = document.getElementById('chatForm');
+    const input = document.getElementById('question');
+    const send = document.getElementById('send');
+    const chapter = document.getElementById('chapter');
+    const welcome = document.getElementById('welcome');
+
+    function addUser(text) {
+      welcome?.remove();
+      const node = document.createElement('div');
+      node.className = 'message user';
+      node.textContent = text;
+      messages.append(node);
+      return node;
+    }
+
+    function addAssistant(data) {
+      const box = document.createElement('article');
+      box.className = 'message assistant';
+      const head = document.createElement('div');
+      head.className = 'answer-head';
+      const icon = document.createElement('span');
+      icon.className = 'mini-logo';
+      icon.textContent = 'S';
+      const label = document.createElement('span');
+      label.textContent = 'Kết quả từ tài liệu';
+      head.append(icon, label);
+      const message = document.createElement('p');
+      message.textContent = data.message || data.error || 'Không có phản hồi.';
+      if (data.error) message.classList.add('error');
+      box.append(head, message);
+
+      if (data.results?.length) {
+        const cards = document.createElement('div');
+        cards.className = 'cards';
+        for (const item of data.results) {
+          const card = document.createElement('section');
+          card.className = 'card';
+          const top = document.createElement('div');
+          top.className = 'card-top';
+          const cite = document.createElement('div');
+          cite.className = 'citation';
+          const rank = document.createElement('span');
+          rank.className = 'badge';
+          rank.textContent = `Kết quả ${item.rank}`;
+          const chapterBadge = document.createElement('span');
+          chapterBadge.className = 'badge';
+          chapterBadge.textContent = `Chương ${item.chapter}`;
+          const page = document.createElement('a');
+          page.href = item.source_url;
+          page.target = '_blank';
+          page.rel = 'noopener noreferrer';
+          page.textContent = `${item.source_title}, PDF p.${item.page} ↗`;
+          cite.append(rank, chapterBadge, page);
+          const score = document.createElement('span');
+          score.className = 'score';
+          score.textContent = `Cosine similarity ${item.similarity.toFixed(3)}`;
+          top.append(cite, score);
+          const quote = document.createElement('blockquote');
+          quote.textContent = item.text;
+          card.append(top, quote);
+          cards.append(card);
+        }
+        box.append(cards);
+      }
+      messages.append(box);
+      box.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const question = input.value.trim();
+      if (!question || send.disabled) return;
+      addUser(question);
+      input.value = '';
+      send.disabled = true;
+      send.textContent = '…';
+      const loading = document.createElement('div');
+      loading.className = 'message assistant loading';
+      loading.textContent = 'Đang tìm trong các trang nguồn…';
+      messages.append(loading);
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({question, chapter:chapter.value || null})
+        });
+        const data = await response.json();
+        loading.remove();
+        addAssistant(response.ok ? data : {error:data.error || 'Truy xuất thất bại.'});
+      } catch (error) {
+        loading.remove();
+        addAssistant({error:'Không kết nối được chatbot local. Kiểm tra cửa sổ terminal đang chạy server.'});
+      } finally {
+        send.disabled = false;
+        send.textContent = 'Gửi ↗';
+        input.focus();
+      }
+    });
+
+    document.querySelectorAll('.suggestion').forEach(button => {
+      button.addEventListener('click', () => { input.value = button.textContent; form.requestSubmit(); });
+    });
+    document.getElementById('clear').addEventListener('click', () => {
+      messages.replaceChildren(welcome.cloneNode(true));
+      messages.querySelectorAll('.suggestion').forEach(button => button.addEventListener('click', () => { input.value = button.textContent; form.requestSubmit(); }));
+      input.focus();
+    });
+
+    fetch('/api/health').then(r => r.json()).then(data => {
+      const dot = document.getElementById('statusDot');
+      const label = document.getElementById('statusText');
+      if (data.status === 'ready') {
+        dot.classList.add('ready');
+        label.textContent = `Index sẵn sàng · ${data.chunks} chunks`;
+      } else label.textContent = 'Chưa có index';
+    }).catch(() => { document.getElementById('statusText').textContent = 'Không kết nối được index'; });
+  </script>
+</body>
+</html>
