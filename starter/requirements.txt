@@ -1,4 +1,5 @@
-# Core setup and PDF parsing. Choose and install an embedding SDK separately.
+# Pipeline dependencies: PDF parsing, local FastEmbed and persistent Chroma.
+# psycopg is retained only for the optional PostgreSQL + pgvector starter.
 psycopg[binary]==3.3.8
 pypdf>=5,<7
 python-dotenv>=1,<2

@@ -1,0 +1,10 @@
+run_id,run_at_ict,record_source,strategy,dev_hit1,dev_hit3,test_hit1,test_hit3
+1,2026-11-14 09:38,"Saved run artifacts in commit 0da2964",A,13/20,17/20,3/5,3/5
+1,2026-11-14 09:38,"Saved run artifacts in commit 0da2964",B,11/20,17/20,3/5,3/5
+1,2026-11-14 09:38,"Saved run artifacts in commit 0da2964",C,11/20,17/20,3/5,3/5
+2,2026-11-14 10:10,"Terminal output recorded during rerun; full trace was not retained",A,12/20,16/20,3/5,3/5
+2,2026-11-14 10:10,"Terminal output recorded during rerun; full trace was not retained",B,11/20,17/20,3/5,3/5
+2,2026-11-14 10:10,"Terminal output recorded during rerun; full trace was not retained",C,11/20,17/20,3/5,3/5
+3,2026-11-14 10:14,"starter/results/summary.json and retrieval_traces.jsonl",A,13/20,17/20,3/5,3/5
+3,2026-11-14 10:14,"starter/results/summary.json and retrieval_traces.jsonl",B,11/20,17/20,3/5,3/5
+3,2026-11-14 10:14,"starter/results/summary.json and retrieval_traces.jsonl",C,10/20,16/20,3/5,3/5

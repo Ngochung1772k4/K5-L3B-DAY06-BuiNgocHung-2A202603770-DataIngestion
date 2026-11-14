@@ -1,6 +1,6 @@
 {
   "run": {
-    "run_at_utc": "2026-11-14T02:38:57.119414+00:00",
+    "run_at_utc": "2026-11-14T03:14:01.316172+00:00",
     "python": "3.13.15",
     "pages": 30,
     "questions": 25,
@@ -9,7 +9,7 @@
     "vector_store": "Chroma PersistentClient 1.3.5",
     "metric": "cosine",
     "search_mode": "Chroma HNSW approximate nearest-neighbor index; persistent local storage",
-    "total_seconds": 10.12606290000258,
+    "total_seconds": 27.706487699993886,
     "api_cost_usd": 0,
     "notes": "Local ONNX embedding inference; first run downloads the model."
   },
@@ -49,10 +49,10 @@
     "C": {
       "dev": {
         "n": 20,
-        "hit_at_1": "11/20",
-        "hit_at_1_rate": 0.55,
-        "evidence_hit_at_3": "17/20",
-        "evidence_hit_at_3_rate": 0.85
+        "hit_at_1": "10/20",
+        "hit_at_1_rate": 0.5,
+        "evidence_hit_at_3": "16/20",
+        "evidence_hit_at_3_rate": 0.8
       },
       "test": {
         "n": 5,
@@ -74,8 +74,8 @@
       "min_chars": 62,
       "max_chars": 499,
       "description": "Fixed-size 500 characters, overlap 50; no metadata filter",
-      "embedding_seconds_first_seen": 2.3139714999997523,
-      "store_upsert_seconds": 0.6343617999955313,
+      "embedding_seconds_first_seen": 9.283782599988626,
+      "store_upsert_seconds": 1.70603589998791,
       "model": "sentence-transformers/all-MiniLM-L6-v2",
       "dimensions": 384,
       "metric": "cosine",
@@ -91,8 +91,8 @@
       "min_chars": 65,
       "max_chars": 805,
       "description": "Sentence/paragraph-boundary chunks up to 800 characters; no metadata filter",
-      "embedding_seconds_first_seen": 2.2215498000005027,
-      "store_upsert_seconds": 0.4034193999978015,
+      "embedding_seconds_first_seen": 8.581404500000644,
+      "store_upsert_seconds": 1.0997838000039337,
       "model": "sentence-transformers/all-MiniLM-L6-v2",
       "dimensions": 384,
       "metric": "cosine",
@@ -108,8 +108,8 @@
       "min_chars": 65,
       "max_chars": 805,
       "description": "Same sentence/paragraph chunks as B; apply chapter filter only when supplied",
-      "embedding_seconds_first_seen": 3.650000144261867e-05,
-      "store_upsert_seconds": 0.2985476000030758,
+      "embedding_seconds_first_seen": 3.029999788850546e-05,
+      "store_upsert_seconds": 0.4903699999995297,
       "model": "sentence-transformers/all-MiniLM-L6-v2",
       "dimensions": 384,
       "metric": "cosine",

@@ -26,7 +26,7 @@ def main() -> None:
     metadata_rows = []
     grounding_rows = []
     grounding_scores = {"q21": (2, "Top-3 rank 1 on PDF p.45 contains the group/identity evidence."),
-                        "q22": (0, "All top-3 results are on p.44; none list the three requested field-research forms from p.46."),
+                        "q22": (0, "The top-3 results are mostly from p.44; B/C also return one p.41 chunk. None contains the three requested field-research forms from p.46."),
                         "q23": (1, "Top-3 includes nearby covert/participant-observation discussion on p.47, but misses the main-advantage sentence."),
                         "q24": (2, "Top-3 rank 1 on PDF p.48 directly defines institutional ethnography and its focus."),
                         "q25": (2, "Top-3 rank 1 on PDF p.51 states the time, cost and depth benefits." )}
@@ -48,7 +48,9 @@ def main() -> None:
                                   "chapter_correct": str(meta.get("chapter")) == str(page.get("chapter")),
                                   "required_filter": json.dumps(q.get("filter", {}), ensure_ascii=False),
                                   "filter_matches_this_hit": filter_matches,
-                                  "review_note": "Compare document/source/page/chapter with starter/data/pages.jsonl and data/manifest.json"})
+                                   "reviewer": "Automated comparison with source page record",
+                                   "author_review_status": "Student sign-off pending",
+                                   "review_note": "Compare document/source/page/chapter with starter/data/pages.jsonl and data/manifest.json"})
         evidence_flags = [bool(x) for x in trace["evaluation"]["gold_match_by_rank"]]
         score, reason = grounding_scores[q["id"]]
         grounding_rows.append({"strategy": trace["strategy"], "question_id": q["id"],

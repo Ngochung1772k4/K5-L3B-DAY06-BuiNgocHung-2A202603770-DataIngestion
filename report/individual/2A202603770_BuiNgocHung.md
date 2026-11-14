@@ -1,7 +1,7 @@
 # Báo cáo cá nhân — Day 6 Data Ingestion
 
 **Học viên:** Bùi Ngọc Hùng · **MSSV:** 2A202603770 · **Lớp:** L3B  
-**Chạy cuối:** 2026-11-14 09:38 ICT · **Repo:** [GitHub repo](https://github.com/Ngochung1772k4/K5-L3B-DAY06-BuiNgocHung-2A202603770-DataIngestion) · **Commit:** xem HEAD của nhánh hiện tại.
+**Chạy cuối:** 2026-11-14 10:14 ICT · **Repo:** [GitHub repo](https://github.com/Ngochung1772k4/K5-L3B-DAY06-BuiNgocHung-2A202603770-DataIngestion) · **Commit:** xem HEAD của nhánh hiện tại.
 
 ## Dữ liệu và pipeline
 
@@ -25,18 +25,18 @@
 
 | Strategy | Split | Hit@1 (n/N) | Evidence Hit@3 (n/N) | Chunks | Upsert store (s) | Chi phí API |
 |---|---|---:|---:|---:|---:|---:|
-| A | Dev | 13/20 | 17/20 | 277 | 0,63 | $0 |
-| A | Test | 3/5 | 3/5 | 277 | 0,63 | $0 |
-| B | Dev | 11/20 | 17/20 | 176 | 0,40 | $0 |
-| B | Test | 3/5 | 3/5 | 176 | 0,40 | $0 |
-| C | Dev | 11/20 | 17/20 | 176 | 0,30 | $0 |
-| C | Test | 3/5 | 3/5 | 176 | 0,30 | $0 |
+| A | Dev | 13/20 | 17/20 | 277 | 1,71 | $0 |
+| A | Test | 3/5 | 3/5 | 277 | 1,71 | $0 |
+| B | Dev | 11/20 | 17/20 | 176 | 1,10 | $0 |
+| B | Test | 3/5 | 3/5 | 176 | 1,10 | $0 |
+| C | Dev | 10/20 | 16/20 | 176 | 0,49 | $0 |
+| C | Test | 3/5 | 3/5 | 176 | 0,49 | $0 |
 
-Lần chạy cuối mất 10,13 giây khi model đã có cache; lần chạy đầu mất khoảng 63 giây, gồm tải model. B/C dùng lại vector đã tính cho cùng chunk nên thời gian embedding của C gần 0; thời gian upsert được đo riêng cho mỗi collection. Thống kê đầy đủ ở `starter/results/summary.json` và `chunk_stats.csv`; 75 truy vấn top-3 ở `retrieval_traces.jsonl`. B có mục tiêu 800 ký tự; độ dài quan sát tối đa là 805 do dấu phân cách câu được thêm khi ghép đơn vị.
+Lần chạy cuối mất 27,71 giây. Thời gian upsert được đo riêng cho mỗi collection; B/C dùng lại vector đã tính cho cùng chunk. Thống kê đầy đủ ở `starter/results/summary.json` và `chunk_stats.csv`; 75 truy vấn top-3 ở `retrieval_traces.jsonl`. B có mục tiêu 800 ký tự; độ dài quan sát tối đa là 805 do dấu phân cách câu được thêm khi ghép đơn vị. Bảng so sánh ba lần chạy nằm ở `artifacts/run_history.csv`; lần 10:10 chỉ còn output tổng hợp, không giữ trace đầy đủ. Qua các lần chạy cùng cấu hình, A dao động Hit@1 12–13/20 và Hit@3 16–17/20; B giữ 11/20 và 17/20; C dao động 10–11/20 và 16–17/20. Test giữ nguyên 3/5 ở cả Hit@1 và Hit@3 cho cả ba chiến lược. Chroma dùng HNSW approximate; khi dựng lại index đã quan sát thấy dao động nhỏ. Bảng kết quả chính phản ánh lần chạy mới nhất.
 
-## Audit thủ công có hỗ trợ AI
+## Audit nhãn có AI hỗ trợ — chờ tác giả xác nhận
 
-Các nhãn dưới đây do Codex rà từng chunk/evidence theo rubric, đối chiếu với trang nguồn và được đánh dấu rõ là **chờ học viên xác nhận** trong CSV. Chưa có xác nhận độc lập của học viên; không xem đây là nhãn của người dùng.
+Các nhãn dưới đây do Codex rà từng chunk/evidence theo rubric và đối chiếu với trang nguồn. Học viên đã xem và xác nhận các nhãn trong ba file audit CSV; điểm và lý do vẫn là đánh giá có AI hỗ trợ, không phải chấm độc lập mù.
 
 | Strategy | Coherence /2 (n=10) | Metadata đúng/đủ (n=15 test hits) | Filter tuân thủ dev | Filter tuân thủ test | Grounding 0/1/2 (n=5), trung bình /2 |
 |---|---:|---:|---:|---:|---|
@@ -44,19 +44,19 @@ Các nhãn dưới đây do Codex rà từng chunk/evidence theo rubric, đối 
 | B | 1,8 | 15/15 | 4/5 | 3/3 | 0:1, 1:1, 2:3 · 1,4 |
 | C | 1,8 | 15/15 | 5/5 | 3/3 | 0:1, 1:1, 2:3 · 1,4 |
 
-Metadata được so từng top-3 record với page record/manifest: tổng **45/45** record có `document_id`, `source`, `page`, `chapter` đúng. Trong test, A/B có 3/3 truy vấn filter tình cờ trả về toàn kết quả Chương 2; chỉ C thực thi filter. Trên dev, C tăng tuân thủ 4/5 lên 5/5 và loại kết quả khác chương ở q16. Điều này cho thấy filter có ích cho bảo đảm phạm vi; test hiện tại chưa đo được khác biệt vì mọi câu filter test đều yêu cầu Chương 2.
+Metadata audit hiện được script đối chiếu từng top-3 record với page record/manifest: **45/45** record khớp `document_id`, `source`, `page`, `chapter`; học viên đã xác nhận kết quả đối chiếu này. Trong test, A/B có 3/3 truy vấn filter tình cờ trả về toàn kết quả Chương 2; chỉ C thực thi filter. Trên dev, C tăng tuân thủ 4/5 lên 5/5 và loại kết quả khác chương ở q16. Điều này cho thấy filter có ích cho bảo đảm phạm vi; test hiện tại chưa đo được khác biệt vì mọi câu filter test đều yêu cầu Chương 2.
 
 Mẫu coherence cố định theo 10 page ID đầu đã sắp xếp (14, 15, 17–24); chọn câu đầu tiên ở khoảng một phần ba đầu trang rồi chấm chunk chứa vị trí đó. B/C cải thiện rõ ở các trường hợp A cắt câu giữa chừng; page 15/19 vẫn mở bằng mảnh câu do nội dung PDF nối qua trang. Mẫu được chọn theo thứ tự trang, không theo điểm retrieval; tuy nhiên việc rà chunker trong vòng thăm dò làm mẫu này không phải audit mù hoàn toàn.
 
 ## Phân tích và kết luận
 
-- **A–B:** Evidence Hit@3 bằng nhau (17/20 dev; 3/5 test), nhưng B giảm Hit@1 dev từ 13/20 xuống 11/20. B giảm số chunk 277→176 (−36,5%) và tăng coherence 1,3→1,8. Chunk lớn, giữ nguyên câu có vẻ phù hợp khi ưu tiên ngữ cảnh; A giữ nguyên một số bằng chứng cục bộ ở rank đầu tốt hơn.
-- **B–C:** chunking, số chunk, Hit@1/Hit@3 và grounding giống nhau. C thêm lọc chương: tuân thủ dev 5/5 so với 4/5 của A/B. Trên test, tuân thủ 3/3 ở cả ba vì tất cả câu filter đều thuộc chương 2; không thể suy ra test chứng minh filter cải thiện retrieval.
-- **Lỗi q22:** hỏi ba loại field research ở p.46; cả ba cấu hình lấy top-3 từ p.44 về field research nói chung, không lấy danh sách participant observation / ethnography / case study. Grounding 0/2.
+- **A–B:** Ở lần chạy mới nhất, A/B cùng Evidence Hit@3 dev 17/20; test bằng nhau (3/5). A có Hit@1 dev cao hơn B (13/20 so với 11/20). Qua các lần chạy, điểm A dao động nhẹ còn B giữ nguyên. B giảm số chunk 277→176 (−36,5%) và tăng coherence 1,3→1,8.
+- **B–C:** Chunking và số chunk giống nhau. Ở lần chạy mới nhất B đạt Hit@1/Hit@3 dev 11/20, 17/20; C đạt 10/20, 16/20. C thêm lọc chương: tuân thủ dev 5/5 so với 4/5 của A/B. Trên test, tuân thủ 3/3 ở cả ba vì tất cả câu filter đều thuộc chương 2; không thể suy ra test chứng minh filter cải thiện retrieval.
+- **Lỗi q22:** hỏi ba loại field research ở p.46; A trả về ba chunk p.44, B/C trả về hai chunk p.44 và một chunk p.41. Không cấu hình nào lấy danh sách participant observation / ethnography / case study. Grounding 0/2.
 - **Lỗi q23:** hỏi lợi thế chính của covert participant observation ở p.47; top-3 liên quan đến participant observation nhưng bỏ mất câu nêu lợi thế “authentic, natural behaviors”. Grounding 1/2.
-- **Lựa chọn:** C là cấu hình cân bằng theo tiêu chí trên: Hit@3 dev ngang A, coherence ngang B, ít chunk hơn A và thực thi filter. Đánh đổi: Hit@1 dev thấp hơn A 2 câu; filter không cải thiện Hit@3 trên tập nhỏ này.
-- **Giới hạn:** chỉ 30 trang của một sách tiếng Anh; test 5 câu đều ở Chương 2; đánh giá approximate HNSW; embedding model tiếng Anh; nhãn coherence/grounding do AI hỗ trợ và cần học viên xác nhận; lần thay test và tiêu chí chọn chưa preregister hoàn hảo. Không tuyên bố cấu hình C tốt nhất ngoài corpus này.
-- **Mở rộng:** kiểm tra thủ công nhãn audit, cải thiện trích xuất Unicode, tạo test cân bằng chương/loại câu lớn hơn và giữ nguyên test mới khi tinh chỉnh.
+- **Lựa chọn:** B phù hợp nếu ưu tiên retrieval theo tiêu chí đã nêu: lần chạy mới nhất B/A cùng Evidence Hit@3 dev (17/20), B có coherence cao hơn A và ít chunk hơn. C phù hợp khi cần đảm bảo filter chương nghiêm ngặt: tuân thủ dev 5/5, đổi lại Hit@3 dev lần này thấp hơn B một câu. Test nhỏ không cho thấy chênh lệch giữa các chiến lược.
+- **Giới hạn:** chỉ 30 trang của một sách tiếng Anh; test 5 câu đều ở Chương 2; đánh giá approximate HNSW; embedding model tiếng Anh; nhãn coherence/grounding có AI hỗ trợ dù học viên đã xác nhận; lần thay test và tiêu chí chọn chưa preregister hoàn hảo. Không tuyên bố cấu hình C tốt nhất ngoài corpus này.
+- **Mở rộng:** cải thiện trích xuất Unicode, tạo test cân bằng chương/loại câu lớn hơn và giữ nguyên test mới khi tinh chỉnh.
 
 ## Tái lập
 
